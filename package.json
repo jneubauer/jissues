@@ -1,0 +1,20 @@
+{
+  "name": "jissues",
+  "version": "1.0.0",
+  "description": "JTracker project",
+  "keywords": [
+    "JTracker"
+  ],
+  "author": "Joomla! Community",
+  "license": "GPL v2",
+  "bugs": {
+    "url": "https://github.com/joomla/jissues/issues"
+  },
+  "devDependencies": {
+    "grunt-contrib-copy": "~0.4.1",
+    "grunt-contrib-uglify": "~0.2.7",
+    "grunt": "~0.4.2",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-cssmin": "~0.7.0"
+  }
+}

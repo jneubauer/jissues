@@ -19,6 +19,11 @@ composer.phar
 # Bower Files #
 www/vendor/*
 
+# Grunt files #
+node_modules/*
+
 # Build/Test related files #
 cache.properties
 build/api/*
+build/www/vendor/*
+build/www/*.*
