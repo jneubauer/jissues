@@ -14,11 +14,11 @@ use App\Tracker\Table\IssuesTable;
 use App\Tracker\Table\StatusTable;
 
 use Application\Command\Get\Project;
+use Application\Helper\GitHub\PullProcessor;
 
+use Application\Helper\PullTester\PullTester;
 use Joomla\Date\Date;
 
-use JTracker\Github\DataType\Commit;
-use JTracker\Github\DataType\Commit\Status;
 use JTracker\Github\GithubFactory;
 
 /**
@@ -197,6 +197,9 @@ class Issues extends Project
 
 		$this->usePBar ? $this->out() : null;
 
+		$pullProcessor = new PullProcessor($this->github, $this->project->gh_user, $this->project->gh_project);
+		$pullTester    = new PullTester($this->project->gh_user, $this->project->gh_project);
+
 		// Start processing the pulls now
 		foreach ($ghIssues as $count => $ghIssue)
 		{
@@ -295,38 +298,62 @@ class Issues extends Project
 			{
 				$table->has_code = 1;
 
-				// Get the pull request corresponding to an issue.
-				$this->debugOut('Get PR for the issue');
-
-				$pullRequest = $this->github->pulls->get(
-					$this->project->gh_user, $this->project->gh_project, $ghIssue->number
-				);
-
-				$table->pr_head_ref = $pullRequest->head->ref;
-
-				$status = $this->GetMergeStatus($pullRequest);
-
-				if (!$status->state)
+				if ('open' == $ghIssue->state)
 				{
-					// No status found. Let's create one!
+					// Run this only for "open" issues
 
-					$status->state = 'pending';
-					$status->targetUrl = 'http://issues.joomla.org/gagaga';
-					$status->description = 'JTracker Bug Squad working on it...';
-					$status->context = 'jtracker';
+					// Get the pull request corresponding to an issue.
+					$this->debugOut('Get PR for the issue');
 
-					// @todo Project based status messages
-					// @$this->createStatus($ghIssue, 'pending', 'http://issues.joomla.org/gagaga', 'JTracker Bug Squad working on it...', 'CI/JTracker');
+					try
+					{
+						$pullProcessor->fetchPull($ghIssue->number);
+
+						$table->pr_head_ref = $pullProcessor->getHeadRef();
+
+						$status = $pullProcessor->getMergeStatus();
+
+						if (!$status->state)
+						{
+							// No status found. Let's create one!
+
+							$status->state = 'pending';
+							$status->targetUrl = 'http://issues.joomla.org/gagaga';
+							$status->description = 'JTracker Bug Squad working on it...';
+							$status->context = 'jtracker';
+
+							// @todo Project based status messages
+							// @$this->createStatus($ghIssue, 'pending', 'http://issues.joomla.org/gagaga', 'JTracker Bug Squad working on it...', 'CI/JTracker');
+						}
+						else
+						{
+							// Save the merge status to database
+							$table->merge_state = $status->state;
+							$table->gh_merge_status = json_encode($status);
+						}
+
+						// Get commits
+						$this->debugOut('Get commits for PR');
+
+						$table->commits = json_encode($pullProcessor->getCommits());
+
+						$pullProcessor->fetchFiles();
+
+						$pullTester->runTests($ghIssue->number);
+					}
+					catch (\RuntimeException $exception)
+					{
+						if (666 == $exception->getCode())
+						{
+							// Repo has gone for this PR
+							$this->debugOut($exception->getMessage());
+						}
+						else
+						{
+							throw $exception;
+						}
+					}
 				}
-				else
-				{
-					// Save the merge status to database
-					$table->merge_state = $status->state;
-					$table->gh_merge_status = json_encode($status);
-				}
-
-				// Get commits
-				$table->commits = json_encode($this->getCommits($pullRequest));
 			}
 
 			// Add the closed date if the status is closed
@@ -522,100 +549,5 @@ class Issues extends Project
 		$db->setQuery($query);
 
 		return $db->loadObjectList();
-	}
-
-	/**
-	 * Get the GitHub merge status for an issue.
-	 *
-	 * @param   object  $pullRequest  The pull request object.
-	 *
-	 * @return  Status
-	 *
-	 * @since   1.0
-	 */
-	private function getMergeStatus($pullRequest)
-	{
-		$this->debugOut('Get merge statuses for PR');
-
-		$statuses = $this->github->repositories->statuses->getList(
-			$this->project->gh_user, $this->project->gh_project, $pullRequest->head->sha
-		);
-
-		$mergeStatus = new Status;
-
-		if (isset($statuses[0]))
-		{
-			$mergeStatus->state = $statuses[0]->state;
-			$mergeStatus->targetUrl = $statuses[0]->target_url;
-			$mergeStatus->description = $statuses[0]->description;
-			$mergeStatus->context = $statuses[0]->context;
-		}
-
-		return $mergeStatus;
-	}
-
-	/**
-	 * Get the commits for a GitHub pull request.
-	 *
-	 * @param   object  $pullRequest  The pull request object.
-	 *
-	 * @return  Commit
-	 *
-	 * @since   1.0
-	 */
-	private function getCommits($pullRequest)
-	{
-		$this->debugOut('Get commits for PR');
-
-		$commits = [];
-		$commitData = $this->github->pulls->getCommits(
-			$this->project->gh_user, $this->project->gh_project, $pullRequest->number
-		);
-
-		foreach ($commitData as $commit)
-		{
-			$c = new Commit;
-
-			$c->sha = $commit->sha;
-			$c->message = $commit->commit->message;
-			$c->author_name = $commit->author->login;
-			$c->author_date = $commit->commit->author->date;
-			$c->committer_name = $commit->committer->login;
-			$c->committer_date = $commit->commit->committer->date;
-
-			$commits[] = $c;
-		}
-
-		return $commits;
-	}
-
-	/**
-	 * Create a GitHub merge status for the last commit in a PR.
-	 *
-	 * @param   object  $ghIssue      The issue object.
-	 * @param   string  $state        The state (pending, success, error or failure).
-	 * @param   string  $targetUrl    Optional target URL.
-	 * @param   string  $description  Optional description for the status.
-	 * @param   string  $context      A string label to differentiate this status from the status of other systems.
-	 *
-	 * @return  Status
-	 *
-	 * @since   1.0
-	 */
-	private function createStatus($ghIssue, $state, $targetUrl, $description, $context)
-	{
-		// Get the pull request corresponding to an issue.
-		$this->debugOut('Get PR for the issue');
-
-		$pullRequest = $this->githubBot->pulls->get(
-			$this->project->gh_user, $this->project->gh_project, $ghIssue->number
-		);
-
-		$this->debugOut('Create status for PR');
-
-		return $this->githubBot->repositories->statuses->create(
-			$this->project->gh_user, $this->project->gh_project, $pullRequest->head->sha,
-			$state, $targetUrl, $description, $context
-		);
 	}
 }
