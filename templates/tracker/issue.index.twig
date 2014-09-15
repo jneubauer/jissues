@@ -165,7 +165,17 @@
             </ul>
         {% endif %}
 
-<!-- Categories -->
+        {% if item.checkstyle.file %}
+            <ul class="breadcrumb">
+                <li>
+                    <a href="{{ uri.base.path ~ 'tracker/' ~ project.alias ~ '/' ~ item.issue_number ~ '/checkstyle' }}">
+                        Checkstyle error report
+                    </a>
+                </li>
+            </ul>
+        {% endif %}
+
+        <!-- Categories -->
     {% if item.categories %}
         <ul class="breadcrumb">
             <li>
