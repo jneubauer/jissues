@@ -137,6 +137,7 @@ class PullProcessor
 		$basePath = 'build/tests/' . $this->owner . '/' . $this->repo . '/' . $this->pull->number;
 
 		$filesystem->deleteDir($basePath);
+		$filesystem->createDir($basePath . '/files');
 
 		foreach ($files as $file)
 		{
@@ -148,7 +149,7 @@ class PullProcessor
 					$contents = $this->transport->get($baseUrl . '/' . $file->new)->body;
 
 					// Store the file to disk
-					if (false == $filesystem->write($basePath . '/' . $file->new, $contents))
+					if (false == $filesystem->write($basePath . '/files/' . $file->new, $contents))
 					{
 						throw new \Exception(sprintf('Can not write the file: "%s"', $basePath . '/' . $file->new));
 					}
@@ -287,9 +288,9 @@ class PullProcessor
 					{
 						$state = 1;
 						$file = new \stdClass;
-					}
 
-					$file->action = 'modified';
+						$file->action = 'modified';
+					}
 
 					break;
 

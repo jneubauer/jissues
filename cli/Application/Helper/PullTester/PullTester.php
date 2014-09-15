@@ -8,6 +8,8 @@
 
 namespace Application\Helper\PullTester;
 
+use League\Flysystem\Adapter\Local;
+use League\Flysystem\Filesystem;
 use PHP_CodeSniffer_CLI;
 
 /**
@@ -17,15 +19,6 @@ use PHP_CodeSniffer_CLI;
  */
 class PullTester
 {
-	/**
-	 * Joomla! Github object
-	 *
-	 * @var    \JTracker\GitHub\Github
-	 *
-	 * @since  1.0
-	 */
-	protected $gitHub;
-
 	/**
 	 * @var string
 	 *
@@ -41,11 +34,6 @@ class PullTester
 	private $repo;
 
 	/**
-	 * @var PullRequest
-	 */
-	private $pull = null;
-
-	/**
 	 * Constructor.
 	 *
 	 * @param   string  $owner  The repo owner.
@@ -59,23 +47,23 @@ class PullTester
 
 	public function runTests($pullNumber)
 	{
-		$basePath = JPATH_ROOT . '/build/tests/' . $this->owner . '/' . $this->repo . '/' . $pullNumber;
+		$basePath = 'build/tests/' . $this->owner . '/' . $this->repo . '/' . $pullNumber;
 
-		$csErrors = $this->runCheckStyle($basePath);
+		$csErrors = $this->runCheckStyle(JPATH_ROOT . '/' . $basePath);
 
+		$tests = new \stdClass;
 
-		echo $csErrors;
+		$tests->checkstyleErrors = $csErrors;
 
-		return;
+		$filesystem = new Filesystem(new Local(JPATH_ROOT));
 
-		$this
-			->out()
-			->out(
-				$numErrors
-					? sprintf('<error> Finished with %d errors </error>', $numErrors)
-					: '<ok>Success</ok>'
-			);
+		// Store the file to disk
+		if (false == $filesystem->write($basePath . '/tests.json', json_encode($tests, JSON_PRETTY_PRINT)))
+		{
+			throw new \Exception(sprintf('Can not write the file: "%s"', $basePath . '/tests.json'));
+		}
 
+		return $this;
 	}
 
 	/**
@@ -88,7 +76,7 @@ class PullTester
 	private function runCheckStyle($basePath)
 	{
 		$options = [
-			'files'      => [$basePath],
+			'files'      => [$basePath . '/files'],
 			'extensions' => ['php'],
 			'standard'   => [JPATH_ROOT . '/build/phpcs/Joomla'],
 			'reports'    => ['xml' => $basePath . '/checkstyle.xml']

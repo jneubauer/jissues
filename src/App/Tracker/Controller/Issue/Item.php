@@ -71,6 +71,15 @@ class Item extends AbstractTrackerController
 
 		$item->userTest = $this->model->getUserTest($item->id, $user->username);
 
+		$item->checkstyle = null;
+
+		$fileName = JPATH_ROOT . '/build/tests/' . $project->gh_user . '/' . $project->gh_project . '/' . $item->issue_number . '/checkstyle.xml';
+
+		if (file_exists($fileName))
+		{
+			$item->checkstyle = simplexml_load_file($fileName);
+		}
+
 		$this->view->setItem($item);
 		$this->view->setEditOwn($user->canEditOwn($item->opened_by));
 		$this->view->setProject($project);
