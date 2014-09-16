@@ -8,8 +8,7 @@
 
 namespace App\Tracker\Controller\Issue;
 
-use App\Tracker\Model\IssueModel;
-use App\Tracker\View\Issue\IssueHtmlView;
+use App\Tracker\View\Checkstyle\CheckstyleHtmlView;
 
 use JTracker\Controller\AbstractTrackerController;
 
@@ -18,7 +17,7 @@ use JTracker\Controller\AbstractTrackerController;
  *
  * @since  1.0
  */
-class Item extends AbstractTrackerController
+class Checkstyle extends AbstractTrackerController
 {
 	/**
 	 * The default view for the component
@@ -26,23 +25,15 @@ class Item extends AbstractTrackerController
 	 * @var    string
 	 * @since  1.0
 	 */
-	protected $defaultView = 'issue';
+	protected $defaultView = 'checkstyle';
 
 	/**
 	 * View object
 	 *
-	 * @var    IssueHtmlView
+	 * @var    CheckstyleHtmlView
 	 * @since  1.0
 	 */
 	protected $view = null;
-
-	/**
-	 * Model object
-	 *
-	 * @var    IssueModel
-	 * @since  1.0
-	 */
-	protected $model = null;
 
 	/**
 	 * Initialize the controller.
@@ -60,28 +51,23 @@ class Item extends AbstractTrackerController
 
 		/* @type \JTracker\Application $application */
 		$application = $this->getContainer()->get('app');
-		$project = $application->getProject();
-		$user = $application->getUser();
+		$project     = $application->getProject();
 
-		$user->authorize('view');
+		$application->getUser()->authorize('view');
 
-		$this->model->setProject($project);
+		$id = $application->input->getUint('id');
 
-		$item = $this->model->getItem($application->input->getUint('id'));
+		$path = JPATH_ROOT . '/build/tests/' . $project->gh_user . '/' . $project->gh_project . '/' . $id;
 
-		$item->userTest = $this->model->getUserTest($item->id, $user->username);
-
-		$item->testResults = null;
-
-		$fileName = JPATH_ROOT . '/build/tests/' . $project->gh_user . '/' . $project->gh_project . '/' . $item->issue_number . '/tests.json';
-
-		if (file_exists($fileName))
+		if (false == file_exists($path . '/checkstyle.xml'))
 		{
-			$item->testResults = json_decode(file_get_contents($fileName));
+			throw new \RuntimeException('No checkstyle report available for this item' . $path);
 		}
 
-		$this->view->setItem($item);
-		$this->view->setEditOwn($user->canEditOwn($item->opened_by));
+		$phpcs = simplexml_load_file($path . '/checkstyle.xml');
+
+		$this->view->setCheckstyleObject($phpcs);
+
 		$this->view->setProject($project);
 
 		return $this;

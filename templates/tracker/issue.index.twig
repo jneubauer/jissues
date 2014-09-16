@@ -146,8 +146,9 @@
         {% endif %}
     </ul>
 
-        {% if item.merge_state %}
+        {% if item.merge_state or item.testResults %}
             <ul class="breadcrumb">
+            {% if item.merge_state %}
                 <li>{{ item.merge_state|mergeBadge|raw }}</li>
 
                 {% if item.gh_merge_status.targetUrl %}
@@ -162,18 +163,26 @@
                         </a>
                     </li>
                 {% endif %}
+            {% endif %}
+            {% if item.testResults %}
+                <li>
+                    {% if 0 == item.testResults.checkstyleErrors %}
+                        <span class="badge badge-success">
+                            {{ 'No checkstyle errors'|_ }}
+                        </span>
+                    {% else %}
+                        <span class="badge badge-important">
+                        {{ '%d Checkstyle errors'|_|format(item.testResults.checkstyleErrors) }}
+                        </span>
+                        <a href="{{ uri.base.path ~ 'tracker/' ~ project.alias ~ '/' ~ item.issue_number ~ '/checkstyle' }}">
+                        {{ 'Details'|_ }}
+                        </a>
+                    {% endif %}
+                </li>
+            {% endif %}
             </ul>
         {% endif %}
 
-        {% if item.checkstyle.file %}
-            <ul class="breadcrumb">
-                <li>
-                    <a href="{{ uri.base.path ~ 'tracker/' ~ project.alias ~ '/' ~ item.issue_number ~ '/checkstyle' }}">
-                        Checkstyle error report
-                    </a>
-                </li>
-            </ul>
-        {% endif %}
 
         <!-- Categories -->
     {% if item.categories %}
