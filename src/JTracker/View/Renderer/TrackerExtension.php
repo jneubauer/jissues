@@ -94,6 +94,7 @@ class TrackerExtension extends \Twig_Extension
 			new \Twig_SimpleFunction('g11n4t', 'g11n4t'),
 			new \Twig_SimpleFunction('sprintf', 'sprintf'),
 			new \Twig_SimpleFunction('stripJRoot', array($this, 'stripJRoot')),
+			new \Twig_SimpleFunction('stripTestPath', array($this, 'stripTestPath')),
 			new \Twig_SimpleFunction('avatar', array($this, 'fetchAvatar')),
 			new \Twig_SimpleFunction('prioClass', array($this, 'getPrioClass')),
 			new \Twig_SimpleFunction('priorities', array($this, 'getPriorities')),
@@ -154,6 +155,25 @@ class TrackerExtension extends \Twig_Extension
 	public function stripJRoot($string)
 	{
 		return str_replace(JPATH_ROOT, 'JROOT', $string);
+	}
+
+	/**
+	 * Strips a tests path from a full path.
+	 *
+	 * @param   string  $fileName  The file name to process.
+	 * @param   object  $project   The project object.
+	 * @param   object  $item      The item object.
+	 *
+	 * @return  string
+	 *
+	 * @since    1.0
+	 */
+	public function stripTestPath($fileName, $project, $item)
+	{
+		$testPath = JPATH_ROOT . '/build/tests/'
+			. $project->gh_user . '/' . $project->gh_project . '/' . $item->issue_number . '/files';
+
+		return str_replace($testPath, '', $fileName);
 	}
 
 	/**

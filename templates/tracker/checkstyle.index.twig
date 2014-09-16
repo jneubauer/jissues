@@ -11,12 +11,21 @@
 
     <h1>Checkstyle report</h1>
 
+    <h2>#{{ item.issue_number ~ ' ' ~ item.title }}</h2>
+
+    <p>by {{ item.opened_by }}</p>
+
+    <hr />
+
     {% for file in checkstyleObject.file %}
-        <h3>{{ file.attributes.name }}</h3>
+
+        <h3>{{ stripTestPath(file.attributes.name, project, item) }}</h3>
+
         <p>
-            Errors: {{ file.attributes.errors }}
+            Errors: {{ file.attributes.errors }}<br />
             Warnings: {{ file.attributes.warnings }}
         </p>
+
         {% if file.warning %}
             <h4>Warnings</h4>
             <ul class="unstyled">
@@ -28,6 +37,7 @@
             {% endfor %}
             </ul>
         {% endif %}
+
         {% if file.error %}
             <h4>Errors</h4>
             <ul class="unstyled">
@@ -39,6 +49,9 @@
             {% endfor %}
             </ul>
         {% endif %}
+
+        <hr />
+
     {% endfor %}
 
 {% endblock %}

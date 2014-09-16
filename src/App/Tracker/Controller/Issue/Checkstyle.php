@@ -8,6 +8,7 @@
 
 namespace App\Tracker\Controller\Issue;
 
+use App\Tracker\Model\CheckstyleModel;
 use App\Tracker\View\Checkstyle\CheckstyleHtmlView;
 
 use JTracker\Controller\AbstractTrackerController;
@@ -36,6 +37,14 @@ class Checkstyle extends AbstractTrackerController
 	protected $view = null;
 
 	/**
+	 * Model object
+	 *
+	 * @var    CheckstyleModel
+	 * @since  1.0
+	 */
+	protected $model = null;
+
+	/**
 	 * Initialize the controller.
 	 *
 	 * This will set up default model and view classes.
@@ -53,6 +62,9 @@ class Checkstyle extends AbstractTrackerController
 		$application = $this->getContainer()->get('app');
 		$project     = $application->getProject();
 
+		$this->view->setProject($project);
+		$this->model->setProject($project);
+
 		$application->getUser()->authorize('view');
 
 		$id = $application->input->getUint('id');
@@ -67,8 +79,7 @@ class Checkstyle extends AbstractTrackerController
 		$phpcs = simplexml_load_file($path . '/checkstyle.xml');
 
 		$this->view->setCheckstyleObject($phpcs);
-
-		$this->view->setProject($project);
+		$this->view->setItem($this->model->getItem($id));
 
 		return $this;
 	}

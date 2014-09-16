@@ -30,6 +30,14 @@ class CheckstyleHtmlView extends AbstractTrackerHtmlView
 	protected $project = null;
 
 	/**
+	 * Item object
+	 *
+	 * @var    IssuesTable
+	 * @since  1.0
+	 */
+	protected $item = null;
+
+	/**
 	 * If the user has "edit own" rights.
 	 *
 	 * @var    object
@@ -48,6 +56,7 @@ class CheckstyleHtmlView extends AbstractTrackerHtmlView
 	public function render()
 	{
 		$this->renderer->set('project', $this->getProject());
+		$this->renderer->set('item', $this->getItem());
 		$this->renderer->set('checkstyleObject', $this->getCheckstyleObject());
 
 		return parent::render();
@@ -118,5 +127,39 @@ class CheckstyleHtmlView extends AbstractTrackerHtmlView
 		}
 
 		return $this->checkstyleObject;
+	}
+
+	/**
+	 * Get the item.
+	 *
+	 * @throws \RuntimeException
+	 * @return IssuesTable
+	 *
+	 * @since   1.0
+	 */
+	public function getItem()
+	{
+		if (is_null($this->item))
+		{
+			throw new \RuntimeException('Item not set.');
+		}
+
+		return $this->item;
+	}
+
+	/**
+	 * Set the item.
+	 *
+	 * @param   IssuesTable  $item  The item to set.
+	 *
+	 * @return $this
+	 *
+	 * @since   1.0
+	 */
+	public function setItem($item)
+	{
+		$this->item = $item;
+
+		return $this;
 	}
 }
