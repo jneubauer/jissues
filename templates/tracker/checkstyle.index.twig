@@ -26,31 +26,37 @@
             Warnings: {{ file.attributes.warnings }}
         </p>
 
-        {% if file.warning %}
-            <h4>Warnings</h4>
-            <ul class="unstyled">
-            {% for warning in file.warning %}
-                <li>
-                    <code>{{ warning.attributes.line }}</code>
-                    {{ warning }}
-                </li>
-            {% endfor %}
-            </ul>
-        {% endif %}
+        <div style="cursor: pointer; background-color: #eee;" onclick="$(this).next().toggle();" title="{{ 'Details'|_ }}">
+            ...
+        </div>
 
-        {% if file.error %}
-            <h4>Errors</h4>
-            <ul class="unstyled">
-            {% for error in file.error %}
-                <li>
-                    <code>{{ error.attributes.line }}</code>
-                    {{ error }}
-                </li>
-            {% endfor %}
-            </ul>
-        {% endif %}
+        <div style="background-color: #eee; display: none;">
 
-        <hr />
+            {% if file.warning %}
+                <h4>Warnings</h4>
+                <ul class="unstyled">
+                {% for warning in file.warning %}
+                    <li>
+                        <code>{{ warning.attributes.line }}</code>
+                        {{ warning }}
+                    </li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+
+            {% if file.error %}
+                <h4>Errors</h4>
+                <ul class="unstyled">
+                {% for error in file.error %}
+                    <li>
+                        <code>{{ error.attributes.line }}</code>
+                        {{ error }}
+                    </li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+
+        </div>
 
     {% endfor %}
 
