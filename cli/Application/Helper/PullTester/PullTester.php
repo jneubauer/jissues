@@ -38,6 +38,8 @@ class PullTester
 	 *
 	 * @param   string  $owner  The repo owner.
 	 * @param   string  $repo   The repo name.
+	 *
+	 * @since  1.0
 	 */
 	public function __construct($owner, $repo)
 	{
@@ -45,6 +47,17 @@ class PullTester
 		$this->repo  = $repo;
 	}
 
+	/**
+	 * Run the tests.
+	 *
+	 * @param   integer  $pullNumber  The pull number.
+	 *
+	 * @return  $this
+	 *
+	 * @throws \Exception
+	 *
+	 * @since  1.0
+	 */
 	public function runTests($pullNumber)
 	{
 		$basePath = 'build/tests/' . $this->owner . '/' . $this->repo . '/' . $pullNumber;
@@ -69,9 +82,11 @@ class PullTester
 	/**
 	 * Run checkstyle tests.
 	 *
-	 * @param $basePath
+	 * @param   string  $basePath  The base path.
 	 *
 	 * @return  integer The number of error and warning messages shown.
+	 *
+	 * @since  1.0
 	 */
 	private function runCheckStyle($basePath)
 	{
