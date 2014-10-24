@@ -3,14 +3,15 @@
 # This file is distributed under the same license as the JTracker package.
 # 
 # Translators:
+# Jesper Post Tønder <jpt@redweb.dk>, 2014
 # Ole Ottosen <ot2sen@gmail.com>, 2014
 msgid ""
 msgstr ""
 "Project-Id-Version: JTracker\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-09-09 11:28-0500\n"
-"PO-Revision-Date: 2014-08-19 16:19+0000\n"
-"Last-Translator: Michael Babker <mbabker@flbab.com>\n"
+"POT-Creation-Date: 2014-10-18 01:07-0500\n"
+"PO-Revision-Date: 2014-10-17 10:42+0000\n"
+"Last-Translator: Jesper Post Tønder <jpt@redweb.dk>\n"
 "Language-Team: Danish (Denmark) (http://www.transifex.com/projects/p/jtracker/language/da_DK/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -65,11 +66,11 @@ msgstr "GitHub repo"
 #: /templates/projects/project.add.twig:53
 #: /templates/projects/project.edit.twig:86
 msgid "External Tracker Link"
-msgstr "Eksternt tracker link"
+msgstr "Eksternt Tracker Link"
 
 #: /templates/projects/project.edit.twig:6
 msgid "Edit Project"
-msgstr "Ret projekt"
+msgstr "Rediger Projekt"
 
 #: /templates/projects/project.edit.twig:17
 #: /templates/projects/projects.index.twig:61
@@ -79,15 +80,15 @@ msgstr "Slet"
 
 #: /templates/projects/project.edit.twig:28
 msgid "Edit project"
-msgstr "Ret projekt"
+msgstr "Rediger projekt"
 
 #: /templates/projects/project.edit.twig:72
 msgid "GitHub Editbot user"
-msgstr ""
+msgstr "GitHub Editbot bruger"
 
 #: /templates/projects/project.edit.twig:79
 msgid "GitHub Editbot password"
-msgstr ""
+msgstr "GitHub Editbot adgangskode"
 
 #: /templates/projects/projects.index.twig:6
 msgid "Projects"
@@ -125,7 +126,7 @@ msgstr "Hooks"
 #: /templates/projects/projects.index.twig:46
 #: /templates/projects/project.index.twig:54
 msgid "Labels"
-msgstr "Mærker"
+msgstr "Etiketter"
 
 #: /templates/projects/projects.index.twig:48
 msgid "Stats"
@@ -153,20 +154,20 @@ msgstr "Projekt"
 #: /templates/projects/project.index.twig:26
 #, php-format
 msgid "Project %s Tracker"
-msgstr ""
+msgstr "Projekt %s Tracker"
 
 #: /templates/projects/project.index.twig:35
 #, php-format
 msgid "Project %s on GitHub"
-msgstr ""
+msgstr "Projekter %s på GitHub"
 
 #: /templates/projects/project.index.twig:39
 msgid "Statistics"
-msgstr ""
+msgstr "Statistik"
 
 #: /templates/projects/project.index.twig:57
 msgid "Categories"
-msgstr ""
+msgstr "Kategorier"
 
 #: /src/App/Projects/Table/ProjectsTable.php:59
 msgid "A title is required"

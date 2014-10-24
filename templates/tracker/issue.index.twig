@@ -18,15 +18,16 @@
     <link href="{{ uri.base.path }}jtracker/markitup/sets/markdown/style.css" rel="stylesheet" />
     <link href="{{ uri.base.path }}vendor/blueimp-file-upload/css/jquery.fileupload.css" rel="stylesheet" >
     <link href="{{ uri.base.path }}vendor/blueimp-file-upload/css/jquery.fileupload-ui.css" rel="stylesheet" >
+    <link href="{{ uri.base.path }}vendor/jquery.atwho/dist/css/jquery.atwho.css" rel="stylesheet" media="screen">
     <style type="text/css">
         a:target {
             /* Anchor links in events and fixed top bar */
             padding-top: 120px;;
         }
-        .tests-success {
+        .tests-success, .tests-1 {
             color: green;
         }
-        .tests-fail {
+        .tests-fail, .tests-2 {
             color: red;
         }
     </style>
@@ -77,7 +78,7 @@
 
         <li>
             <span class="badge {{ prioClass(item.priority) }}">
-                {{ "Priority"|_ }} {{ item.priority }}
+                {{ getPriority(item.priority) }}
             </span>
         </li>
 
@@ -107,28 +108,32 @@
 
         {% if project.gh_user and project.gh_project %}
             <li>
-                <i class="icon-github"></i>
+                &nbsp;
                 <a href="https://github.com/{{ project.gh_user ~ '/' ~ project.gh_project ~ '/issues/' ~ item.issue_number }}"
-                   target="_blank">
-                    GitHub # {{ item.issue_number }}
+                   target="_blank" title="{{ 'View this issue on GitHub'|_ }}">
+                    <span class="octicon octicon-mark-github"></span>
+                    # {{ item.issue_number }}
                 </a>
             </li>
 
             {% if item.has_code %}
                 <li>
-                    &nbsp;&bull;&nbsp;
+                    &nbsp;
                     <a href="https://github.com/{{ project.gh_user ~ '/' ~ project.gh_project ~ '/pull/' ~ item.issue_number }}.diff"
-                       target="_blank">
-                        diff
+                       target="_blank" title="{{ 'View a plain diff for this pull request'|_ }}">
+                        <span class="octicon octicon-diff"></span>
+                        {{ 'Diff'|_ }}
                     </a>
                 </li>
             {% endif %}
 
             {% if item.pr_head_ref %}
                 <li>
-                    &nbsp;&bull;&nbsp;
-                    <a href="https://github.com/{{ item.opened_by ~ '/'  ~ project.gh_project ~ '/archive/' ~ item.pr_head_ref ~ '.zip' }}">
-                        {{ item.opened_by ~ ':' ~ item.pr_head_ref }}
+                    &nbsp;
+                    <a href="https://github.com/{{ item.pr_head_user ~ '/'  ~ project.gh_project ~ '/archive/' ~ item.pr_head_ref ~ '.zip' }}"
+                       title="{{ 'Download this fork as a ZIP file'|_ }}">
+                        <span class="octicon octicon-repo-forked"></span>
+                        {{ item.pr_head_user ~ ':' ~ item.pr_head_ref }}
                     </a>
                 </li>
             {% endif %}
@@ -221,6 +226,15 @@
               {% endfor %}
             {% endfor %}
         </div>
+    {% endif %}
+
+    <!-- Milestones -->
+    {% if item.milestone_title %}
+    <ul class="breadcrumb">
+        <li>
+            <strong>{{ item.milestone_title }}</strong>
+        </li>
+    </ul>
     {% endif %}
 
     <!-- Main content -->
@@ -338,7 +352,8 @@
                         </ul>
                     </fieldset>
                     <div id="testResult"></div>
-                    <a href="javascript:" class="btn btn-primary" onclick="JTracker.submitTest('{{ item.id }}', '#testResult');">
+                    <a href="javascript:" class="btn btn-primary"
+                       onclick="JTracker.submitTest('{{ item.id }}', '#testResult', '#newComment', 'tplNewTestResult');">
                         {{ "Submit test result"|_ }}
                     </a>
                 </form>
@@ -346,7 +361,7 @@
 
                 {% if user.check('edit') %}
                     <hr />
-                    <h6>{{ 'Alter test results' }}</h6>
+                    <h6>{{ 'Alter test result'|_ }}</h6>
                     <form class="form-inline">
 
                         {{ 'Set the test result for user %s to %s'|_|format(
@@ -378,14 +393,23 @@
     {% for activity in item.activities %}
         <div id="event-{{ activity.activities_id }}">
             <div class="row-fluid">
-            {% if 'alter_testresult' == activity.event %}
+            {% if 'test_item' == activity.event %}
                 {% set change = activity.text|json_decode %}
                 <div class="offset1 span9 activity-action">
                     {{ avatar(activity.user, 20, 'avatar')|raw }}
                     <b>{{ activity.user }}</b>
                     - <a href="/{{ uri.route }}#event-{{ activity.activities_id }}">{{ activity.event }}</a>
                     - <span title="{{ activity.created_date|date("j M Y H:i:s") }}"><i class="icon-calendar"></i>{{ activity.created_date|date("j M y") }}</span>
-                    - <b>{{ change.user }}</b>: {{ userTestOptions(change.value) }}
+                    - <span class="tests-{{ change }}">{{ userTestOptions(change) }}</span>
+                </div>
+            {% elseif 'alter_testresult' == activity.event %}
+                {% set change = activity.text|json_decode %}
+                <div class="offset1 span9 activity-action">
+                    {{ avatar(activity.user, 20, 'avatar')|raw }}
+                    <b>{{ activity.user }}</b>
+                    - <a href="/{{ uri.route }}#event-{{ activity.activities_id }}">{{ activity.event }}</a>
+                    - <span title="{{ activity.created_date|date("j M Y H:i:s") }}"><i class="icon-calendar"></i>{{ activity.created_date|date("j M y") }}</span>
+                    - <b>{{ change.user }}</b>: <span class="tests-{{ change.value }}">{{ userTestOptions(change.value) }}</span>
                 </div>
             {% elseif 'commit' == activity.event %}
                 <div class="offset1 span11">
@@ -486,6 +510,8 @@
                 </div>
                 <div class="span11">
                     {% set editorId="comment" %}
+                    {% set writeId="write" %}
+                    {% set previewId="preview" %}
                     {% set editorPlaceholder="Leave a comment"|_ %}
                     {% include "editor.twig" %}
                 </div>
@@ -536,6 +562,21 @@
         </div>
     </script>
 
+    <script type="text/x-tmpl" id="tplNewTestResult">
+        [% var resultValues = ['{{ userTestOptions(0) }}', '{{ userTestOptions(1) }}', '{{ userTestOptions(2) }}']; %]
+        <div id="event-[%= o.activities_id %]">
+            <div class="row-fluid">
+                <div class="offset1 span11 activity-action">
+                    {{ avatar(user.username, 20, 'avatar')|raw }}
+                    <b>{{ user.username }}</b>
+                    - <a name="event-[%= o.activities_id %]" href="/{{ uri.route }}#event-[%= o.activities_id %]">[%= o.event %]</a>
+                    - [%= o.created_date %]
+                    - [%= resultValues[o.text] %]
+                </div>
+            </div>
+        </div>
+    </script>
+
     <script type="text/x-tmpl" id="tplNewAlterTestResult">
         [% var resultValues = ['{{ userTestOptions(0) }}', '{{ userTestOptions(1) }}', '{{ userTestOptions(2) }}']; %]
         <div id="event-[%= o.activities_id %]">
@@ -569,6 +610,8 @@
     <script src="{{ uri.base.path }}vendor/blueimp-file-upload/js/jquery.fileupload-validate.js"></script>
     <script src="{{ uri.base.path }}vendor/jquery-textrange/jquery-textrange.js"></script>
     <script src="{{ uri.base.path }}jtracker/core/js/uploader-img.js"></script>
+    <script src="{{ uri.base.path }}vendor/Caret.js/dist/jquery.caret{{ jdebug ? "" : ".min" }}.js"></script>
+    <script src="{{ uri.base.path }}vendor/jquery.atwho/dist/js/jquery.atwho{{ jdebug ? "" : ".min" }}.js"></script>
 
     <script type="text/javascript">
 
@@ -586,6 +629,13 @@
                 JTracker.preview('#comment', '#preview');
             }
         });
+
+        $('#comment').focus(function() {
+            $('input[name="editorId"]').val(this.id);
+        });
+
+        JTracker.setupAtJS('comment', '{{ project.alias }}');
+
     </script>
 
 {% endblock %}
