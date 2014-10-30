@@ -151,7 +151,7 @@ class PullProcessor
 					// Get the file contents
 					$contents = $useTransport
 						? $this->transport->get($baseUrl . '/' . $file->new)->body
-						: file_get_contents($baseUrl . '/' . $file->new);
+						: file_get_contents(urlencode($baseUrl . '/' . $file->new));
 
 					// Store the file to disk
 					if (false == $filesystem->write($basePath . '/files/' . $file->new, $contents))
