@@ -139,6 +139,9 @@ class PullProcessor
 		$filesystem->deleteDir($basePath);
 		$filesystem->createDir($basePath . '/files');
 
+		// On "some" servers we might want to switch to pure PHP...
+		$useTransport = ('openshift' == trim(getenv('JTRACKER_ENVIRONMENT'))) ? false : true;
+
 		foreach ($files as $file)
 		{
 			switch ($file->action)
@@ -146,7 +149,9 @@ class PullProcessor
 				case 'modified':
 				case 'added':
 					// Get the file contents
-					$contents = $this->transport->get($baseUrl . '/' . $file->new)->body;
+					$contents = $useTransport
+						? $this->transport->get($baseUrl . '/' . $file->new)->body
+						: file_get_contents($baseUrl . '/' . $file->new);
 
 					// Store the file to disk
 					if (false == $filesystem->write($basePath . '/files/' . $file->new, $contents))
