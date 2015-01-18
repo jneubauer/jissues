@@ -27,5 +27,7 @@
     "category/:project_alias/delete/:id/" : "\\Tracker\\Controller\\Category\\Delete",
     "category/:project_alias/edit/:id/"   : "\\Tracker\\Controller\\Category\\Edit",
     "fetch/issues"                        : "\\Tracker\\Controller\\Fetch\\Ajax\\Issues",
-    "fetch/users"                         : "\\Tracker\\Controller\\Fetch\\Ajax\\Users"
+    "fetch/users"                         : "\\Tracker\\Controller\\Fetch\\Ajax\\Users",
+
+    "fetch/languages"					  : "\\Tracker\\Controller\\Fetch\\Ajax\\Languages"
 }

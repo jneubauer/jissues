@@ -22,3 +22,11 @@
         {% endfor %}
     </ul>
 </li>
+
+<li class="dropdown pull-right">
+    <a href="{{ uri.base.path }}fetch/languages?base={{ uri.base.full }}" data-target="#" data-toggle="modal">
+        <img src="{{ uri.base.path }}images/flags/{{ lang }}.gif"
+             alt="{{ 'Choose your language...'|_ }}"
+             title="{{ 'Choose your language...'|_ }}"/>
+    </a>
+</li>

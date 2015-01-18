@@ -113,7 +113,11 @@
     <script src="{{ uri.base.path }}vendor/bootstrap/js/bootstrap-tab.js"></script>
     <script src="{{ uri.base.path }}vendor/bootstrap/js/bootstrap-tooltip.js"></script>
     <script src="{{ uri.base.path }}vendor/bootstrap/js/bootstrap-collapse.js"></script>
+    <script src="{{ uri.base.path }}vendor/bootstrap/js/bootstrap-modal.js"></script>
+    <script src="{{ uri.base.path }}vendor/blueimp-tmpl/js/tmpl{{ jdebug ? "" : ".min" }}.js"></script>
+
     <script src="{{ uri.base.path }}jtracker/core/js/jtracker{{ jdebug ? "" : ".min" }}.js"></script>
+    <script src="{{ uri.base.path }}jtracker/blueimp-tmpl/js/jtracker-tmpl{{ jdebug ? "" : ".min" }}.js"></script>
 
     <script src="{{ uri.base.path }}vendor/g11n-js/js/g11n{{ jdebug ? "" : ".min" }}.js"></script>
     <script src="{{ uri.base.path }}vendor/g11n-js/js/methods{{ jdebug ? "" : ".min" }}.js"></script>
@@ -128,10 +132,50 @@
             $('.subnav').affix({
                 offset: {top: $('.subnav').offset().top - $('nav.navbar').height()}
             });
+            // Support for AJAX loaded modal window.
+            $('[data-toggle="modal"]').click(function(e) {
+                e.preventDefault();
+                var url = $(this).attr('href');
+                if (url.indexOf('#') == 0) {
+                    $(url).modal('open');
+                } else {
+                    $.get(url, function(response) {
+                        console.log(response);
+                        console.log(response.data);
+                        $('<div class="modal hide fade">' + tmpl("tplLangswitcher", response) + '</div>').modal();
+                    }).success(function() {});
+                }
+            });
+
         });
     </script>
 
 {% endblock %}
+
+
+    <!-- ++++++++++++++++++++++++++ -->
+    <!-- +  JavaScript templates  + -->
+    <!-- ++++++++++++++++++++++++++ -->
+
+    {% set baseURI = uri.base.path ~ uri.route|split("?")|first %}
+
+    <script type="text/x-tmpl" id="tplLangswitcher">
+        <div class="modal-header">
+	        <a class="close" data-dismiss="modal">&times;</a>
+	        <h3>{{ 'Choose your language...'|_ }}</h3>
+        </div>
+        <div class="modal-body">
+         [% for (var i=0; i < o.data.languages.length; i++) { %]
+            <a class="span6" href="?lang=[%= o.data.languages[i].code %]" title="[%= o.data.languages[i].name %]">
+                <img src="{{ uri.base.path }}images/flags/[%= o.data.languages[i].code %].gif" />
+                [%= o.data.languages[i].name %]
+            </a>
+         [% } %]
+        </div>
+        <div class="modal-footer">
+	        <a class="btn" data-dismiss="modal">Close</a>
+        </div>
+    </script>
 
 </body>
 </html>
